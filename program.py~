@@ -43,9 +43,9 @@ genesis = blocks.genesis({addr: 10**18, addr2: 10**18, add_host: 10**18})
 tx1 = transactions.contract(0,10**12,10000,0,code).sign(key_host)
 result, contract = processblock.apply_transaction(genesis, tx1)
 
-#execute escrow transaction
+#start buying tickets
 #nonce, gasprice, startgas, to, value, data
-price = int(sys.argv[1]) #user supplied price
+price = int(sys.argv[1])
 tx2 = transactions.Transaction(0, 10**12, 10000, contract, price,  serpent.encode_datalist([1,addr2])).sign(key)
 result, ans = processblock.apply_transaction(genesis,tx2)
 tx3 = transactions.Transaction(0, 10**12, 10000, contract,0,  serpent.encode_datalist([int(sys.argv[2])])).sign(key2)
