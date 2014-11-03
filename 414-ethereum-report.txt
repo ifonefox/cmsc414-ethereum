@@ -1,6 +1,5 @@
-
 For our Ethereum project, we decided to implement a simple escrow service.
-With our service, A sender can set up a contract for a recipient to complete,
+With our service, a sender can set up a contract for a recipient to complete,
 and send the money to the escrow service for the task. Once the recipient has
 completed the task, the money goes to the recipient and the escrow service
 keeps five percent of the profits.
@@ -27,3 +26,9 @@ has not been completed may stay incomplete with no activity for a long time
 and the money will not go anywhere. Ideally the money should be sent back to
 the contract creator if there's no activity with their contract, however we
 were not able to figure out how time functions work in Serpent.
+
+Team:
+Adam Weiner
+Jordan Seres
+Max Tatiefo
+Sean Brody

@@ -1,5 +1,5 @@
-__author__ = 'loi'
-lottery = '''
+__author__ = 'adam-jordan-max-sean'
+escrow = '''
 init:
     contract.storage[0] = msg.sender #store service's key
 code:
@@ -24,43 +24,44 @@ from pyethereum import transactions, blocks, processblock, utils
 import time
 import sys
 
+#require command line args
 if len(sys.argv) < 3:
     print("Usage: %s [price] [transcation success: 2, transcation failure: 3]" %sys.argv[0])
     sys.exit(1)
 
-code = serpent.compile(lottery)
-key = utils.sha3('cow')
-addr = utils.privtoaddr(key)
-key2 = utils.sha3('cow2')
-addr2 = utils.privtoaddr(key2)
-key_host = utils.sha3('host')
-add_host = utils.privtoaddr(key_host)
+code = serpent.compile(escrow)
+sender_key = utils.sha3('sender')
+sender_addr = utils.privtoaddr(sender_key)
+recipient_key = utils.sha3('recipient')
+recipient_addr = utils.privtoaddr(recipient_key)
+host_key = utils.sha3('host')
+host_addr = utils.privtoaddr(host_key)
 
 #initialize the block
-genesis = blocks.genesis({addr: 10**18, addr2: 10**18, add_host: 10**18})
+genesis = blocks.genesis({sender_addr: 10**18, recipient_addr: 10**18, host_addr: 10**18})
 
-#This is to initialize the contract
-tx1 = transactions.contract(0,10**12,10000,0,code).sign(key_host)
+#initialize the contract
+tx1 = transactions.contract(0, 10**12, 10000, 0, code).sign(host_key)
 result, contract = processblock.apply_transaction(genesis, tx1)
 
 #execute escrow transaction
 #nonce, gasprice, startgas, to, value, data
 price = int(sys.argv[1]) #user supplied price
-tx2 = transactions.Transaction(0, 10**12, 10000, contract, price,  serpent.encode_datalist([1,addr2])).sign(key)
-result, ans = processblock.apply_transaction(genesis,tx2)
-tx3 = transactions.Transaction(0, 10**12, 10000, contract,0,  serpent.encode_datalist([int(sys.argv[2])])).sign(key2)
-result, ans = processblock.apply_transaction(genesis,tx3)
+tx2 = transactions.Transaction(0, 10**12, 10000, contract, price, serpent.encode_datalist([1,recipient_addr])).sign(sender_key)
+result, ans = processblock.apply_transaction(genesis, tx2)
+tx3 = transactions.Transaction(0, 10**12, 10000, contract, 0, serpent.encode_datalist([int(sys.argv[2])])).sign(recipient_key)
+result, ans = processblock.apply_transaction(genesis, tx3)
 
-print('Check address of service: %s ' %str(hex(genesis.get_storage_data(contract, 0))))
-print('Sender address: %s' %str(hex(genesis.get_storage_data(contract, 1))))
-print('Reciever address: %s' %str(hex(genesis.get_storage_data(contract, 3))))
+print('Service address:  %s ' %str(hex(genesis.get_storage_data(contract, 0))))
+print('Sender address:   %s' %str(hex(genesis.get_storage_data(contract, 1))))
+print('Reciever address: %s\n' %str(hex(genesis.get_storage_data(contract, 3))))
 print('Price: %s' %str(genesis.get_storage_data(contract, 2)))
 
-#Mine serveral blocks
+#mine serveral blocks
 for i in range(5):
     genesis.finalize()
     t = (genesis.timestamp or int(time.time())) + 60
-    genesis = blocks.Block.init_from_parent(genesis, add_host, '', t)
+    genesis = blocks.Block.init_from_parent(genesis, host_addr, '', t)
 
-print 'balance of addr  %s is: %s' %(addr, str(genesis.get_balance(addr)))
-print 'balance of addr2 %s is: %s' %(addr2, str(genesis.get_balance(addr2)))
+print 'Sender balance    (%s): %s' %(sender_addr, str(genesis.get_balance(sender_addr)))
+print 'Recipient balance (%s): %s' %(recipient_addr, str(genesis.get_balance(recipient_addr)))
