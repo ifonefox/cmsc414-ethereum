@@ -1,0 +1,29 @@
+
+For our Ethereum project, we decided to implement a simple escrow service.
+With our service, A sender can set up a contract for a recipient to complete,
+and send the money to the escrow service for the task. Once the recipient has
+completed the task, the money goes to the recipient and the escrow service
+keeps five percent of the profits.
+
+At the initialization step of the escrow service, we first store the service's
+key so that we can add money to the service. In our code block, the first step
+is to handle the creation of a transaction. In our example program, the price
+is supplied through a command line argument. As soon as the contract is
+created, five percent of the price is sent to the escrow service. The next 
+step in our code is handling if a recipient reports that they have completed
+the task and we've verified that the person sending the confirmation request
+is the recipient. When that happens, the money is sent to the recipient.
+When the recipient notifies that the contract was not completed or was a failure,
+and we've verified that it is the proper recipient sending the confirmation to
+the service, we send the money back to the sender/contract creator.
+Determining whether or not a contract has been completed is done by a
+command line argument in our example program (2 for success, 3 for failure). 
+
+Things to keep in mind, in our implementation, the confirmation of a
+contract's completion is only done by the recipient, a smart thing to do
+is also have the contract creator confirm that the task has been completed.
+Also we did not implement a timeout system for contracts, so a contract that
+has not been completed may stay incomplete with no activity for a long time
+and the money will not go anywhere. Ideally the money should be sent back to
+the contract creator if there's no activity with their contract, however we
+were not able to figure out how time functions work in Serpent.
