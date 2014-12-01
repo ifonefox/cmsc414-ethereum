@@ -51,7 +51,7 @@ import sys
 
 #require command line args
 if len(sys.argv) < 3:
-    print("Usage: %s [price] [transcation success: 2, transcation failure: 3]  [transcation success: 2, transcation failure: 3]" %sys.argv[0])
+    print("Usage: %s [price] [recipient: transcation success: 2, transcation deny: 3]  [sender: transcation success: 2, transcation deny: 3]" %sys.argv[0])
     sys.exit(1)
 
 code = serpent.compile(escrow)
