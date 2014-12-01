@@ -8,14 +8,39 @@ code:
         ours = (msg.value/100)*5
         contract.storage[2] = (msg.value - ours)
         contract.storage[3] = msg.data[1] #recipient
+        contract.storage[4] = 0 #sender confirm
+        contract.storage[5] = 0 #recepient confirm
         send(1000, contract.storage[0], ours)
         return(0)
     elif (msg.data[0] == 2) and (contract.storage[3] == msg.sender) :
-        send(1000, msg.sender, contract.storage[2])
+        contract.storage[5] = 1
+        if (contract.storage[4] == 1): #both confirmed, send
+            send(1000, contract.storage[3], contract.storage[2])
+        elif (contract.storage[4] == -1): #disagreement. Contract should contact authorities, or wait for an agreement
+            return(0)
         return(0)
     elif (msg.data[0] == 3) and (contract.storage[3] == msg.sender) :
-        send(1000, contract.storage[1], contract.storage[2])
+        contract.storage[5] = -1
+        if (contract.storage[4] == -1): #both denied, return  
+            send(1000, contract.storage[1], contract.storage[2])
+        elif (contract.storage[4] == 1): #disagreement. Contract should contact authorities, or wait for an agreement
+            return(0)
         return(0)
+    elif (msg.data[0] == 2) and (contract.storage[1] == msg.sender) :
+        contract.storage[4] = 1
+        if (contract.storage[5] == 1): #both confirmed, send
+            send(1000, contract.storage[3], contract.storage[2])
+        elif (contract.storage[5] == -1): #disagreement. Contract should contact authorities, or wait for an agreement
+            return(0)
+        return(0)
+    elif (msg.data[0] == 3) and (contract.storage[1] == msg.sender) :
+        contract.storage[4] = -1
+        if (contract.storage[5] == -1): #both denied, return  
+            send(1000, contract.storage[1], contract.storage[2])
+        elif (contract.storage[5] == 1): #disagreement. Contract should contact authorities, or wait for an agreement
+            return(0)
+        return(0)
+
 
         
 '''
@@ -26,7 +51,7 @@ import sys
 
 #require command line args
 if len(sys.argv) < 3:
-    print("Usage: %s [price] [transcation success: 2, transcation failure: 3]" %sys.argv[0])
+    print("Usage: %s [price] [transcation success: 2, transcation failure: 3]  [transcation success: 2, transcation failure: 3]" %sys.argv[0])
     sys.exit(1)
 
 code = serpent.compile(escrow)
@@ -51,6 +76,8 @@ tx2 = transactions.Transaction(0, 10**12, 10000, contract, price, serpent.encode
 result, ans = processblock.apply_transaction(genesis, tx2)
 tx3 = transactions.Transaction(0, 10**12, 10000, contract, 0, serpent.encode_datalist([int(sys.argv[2])])).sign(recipient_key)
 result, ans = processblock.apply_transaction(genesis, tx3)
+tx4 = transactions.Transaction(1, 10**12, 10000, contract, 0, serpent.encode_datalist([int(sys.argv[3])])).sign(sender_key)
+result, ans = processblock.apply_transaction(genesis, tx4)
 
 print('Service address:  %s ' %str(hex(genesis.get_storage_data(contract, 0))))
 print('Sender address:   %s' %str(hex(genesis.get_storage_data(contract, 1))))
